@@ -13,7 +13,11 @@ export default function App() {
 
   //set state for total rolls
   const [rollCount,setRollCount] = React.useState(1);
+
+  //set state of personal best from local storage
+  const [personalBest,setPersonalBest]=React.useState(parseInt(localStorage.getItem('personalBest'))||0)
   
+  // console.log(personalBest);
 
   //write function to generate random dice value
   function generateNewValue() {
@@ -42,6 +46,11 @@ export default function App() {
 
     if(allEqual && allHeld){
       setTenzie(true);
+
+      if(rollCount<personalBest||personalBest===0){
+        localStorage.setItem('personalBest',rollCount);
+        setPersonalBest(rollCount);
+      }
       
     }
   },[dice])
@@ -82,11 +91,15 @@ export default function App() {
       {tenzie &&<Confetti />}
       <h1 className="app-title">Jacob's Tenzie Game</h1>
 
-      <p className="app-instructions">Instructions: Roll until all dice are the same. Click each die to freeze it between rolls.</p> 
-
-      {tenzie 
-      ?<p>You won in {rollCount} rolls!</p>
-      : <p>{rollCount} rolls this game.</p>}
+      <p className="app-instructions">
+        Roll until all dice are the same.<br></br>
+        Click each die to freeze it between rolls.<br></br> 
+        {personalBest ?`Your personal best is ${personalBest} rolls in a game.`:""}<br></br>
+        {tenzie 
+        ? `You won in ${rollCount} rolls!`
+        : `${rollCount} rolls this game.`}
+      
+      </p> 
       
       <div className="app-die-container">{diceElements}</div>
 
