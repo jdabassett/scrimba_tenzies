@@ -17,7 +17,6 @@ export default function App() {
   //set state of personal best from local storage
   const [personalBest,setPersonalBest]=React.useState(parseInt(localStorage.getItem('personalBest'))||0)
   
-  // console.log(personalBest);
 
   //write function to generate random dice value
   function generateNewValue() {
@@ -51,9 +50,8 @@ export default function App() {
         localStorage.setItem('personalBest',rollCount);
         setPersonalBest(rollCount);
       }
-      
     }
-  },[dice])
+  },[dice,rollCount,personalBest])
 
 
   //write handler function to roll unheld dice
