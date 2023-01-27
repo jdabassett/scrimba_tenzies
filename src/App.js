@@ -1,16 +1,19 @@
 import React from 'react';
 import Die from './components/Die';
-// import Confetti from 'react-confetti';
+import Confetti from 'react-confetti';
 import './App.css';
+import {nanoid} from 'nanoid';
 
 export default function App() {
   //set state for array of new dice from function
   const [dice,setDice] =React.useState(allNewDice());
 
-  console.log(dice);
-
   //set state for end of game 
   const [tenzie,setTenzie] = React.useState(false);
+
+  //set state for total rolls
+  const [rollCount,setRollCount] = React.useState(1);
+  
 
   //write function to generate random dice value
   function generateNewValue() {
@@ -23,36 +26,74 @@ export default function App() {
     for(let i=0;i<10;i++){
       let newDie = {
         value:generateNewValue(),
-        hold:false,
-        id:i+1}
+        held:false,
+        id:nanoid()}
       newArray.push(newDie);
-    };
+    }; 
+
     return newArray;
   }
 
   //each time dice array is changed check to see if tenzie has been reached
+  React.useEffect(()=>{
+    let firstValue = dice[0].value;
+    let allEqual = dice.every((die)=>die.value===firstValue);
+    let allHeld = dice.every((die)=>die.held===true)
+
+    if(allEqual && allHeld){
+      setTenzie(true);
+      
+    }
+  },[dice])
 
 
   //write handler function to roll unheld dice
+  function rollUnheldDice() {
+    if(tenzie===true){
+      setTenzie(false);
+      setDice(allNewDice());
+      setRollCount(1);
+      return;
+    }
+
+    setDice(oldDice => oldDice.map(oldDie => (
+      oldDie.held===true ? {...oldDie}:
+      {...oldDie, value:generateNewValue(), id:nanoid()}
+    )))
+
+    setRollCount(oldRollCount => oldRollCount+1);
+  }
 
   //write handler function to change status of dice held when element is clicked
+  function handlerHold(id) {
+    setDice(oldDice => oldDice.map(oldDie => (
+      (oldDie.id===id) ? {...oldDie, held:!oldDie.held}: {...oldDie}
+    )))
 
+  }
 
   //write function to render all dice
   let diceElements = dice.map((die) => (
-    <Die key={die.id} value={die.value} />
+    <Die key={die.id} value={die.value} held={die.held} id={die.id}handlerHold={handlerHold} />
   ))
-
-  console.log(diceElements)
-
 
   return (
     <div className="app-container">
-      {/* {tenzie && Confetti} */}
+      {tenzie &&<Confetti />}
       <h1 className="app-title">Jacob's Tenzie Game</h1>
-      <p className="app-instructions">Instructions: Roll until all dice are the same. Click each die to freeze it betweeen rolls</p>
+
+      <p className="app-instructions">Instructions: Roll until all dice are the same. Click each die to freeze it between rolls.</p> 
+
+      {tenzie 
+      ?<p>You won in {rollCount} rolls!</p>
+      : <p>{rollCount} rolls this game.</p>}
+      
       <div className="app-die-container">{diceElements}</div>
 
+      <button 
+        className={tenzie ?"app-button button-animation": "app-button"}
+        onClick={rollUnheldDice}
+        >{tenzie ? "Play Again":"Roll Dice"}</button>
     </div>
   );
 }
